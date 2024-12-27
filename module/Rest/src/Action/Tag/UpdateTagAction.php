@@ -7,17 +7,17 @@ namespace Shlinkio\Shlink\Rest\Action\Tag;
 use Laminas\Diactoros\Response\EmptyResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Shlinkio\Shlink\Core\Tag\Model\TagRenaming;
+use Shlinkio\Shlink\Core\Model\Renaming;
 use Shlinkio\Shlink\Core\Tag\TagServiceInterface;
 use Shlinkio\Shlink\Rest\Action\AbstractRestAction;
 use Shlinkio\Shlink\Rest\Middleware\AuthenticationMiddleware;
 
 class UpdateTagAction extends AbstractRestAction
 {
-    protected const ROUTE_PATH = '/tags';
-    protected const ROUTE_ALLOWED_METHODS = [self::METHOD_PUT];
+    protected const string ROUTE_PATH = '/tags';
+    protected const array ROUTE_ALLOWED_METHODS = [self::METHOD_PUT];
 
-    public function __construct(private TagServiceInterface $tagService)
+    public function __construct(private readonly TagServiceInterface $tagService)
     {
     }
 
@@ -27,7 +27,7 @@ class UpdateTagAction extends AbstractRestAction
         $body = $request->getParsedBody();
         $apiKey = AuthenticationMiddleware::apiKeyFromRequest($request);
 
-        $this->tagService->renameTag(TagRenaming::fromArray($body), $apiKey);
+        $this->tagService->renameTag(Renaming::fromArray($body), $apiKey);
         return new EmptyResponse();
     }
 }

@@ -12,7 +12,7 @@ use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Writer\SvgWriter;
 use Endroid\QrCode\Writer\WriterInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Shlinkio\Shlink\Core\Options\QrCodeOptions;
+use Shlinkio\Shlink\Core\Config\Options\QrCodeOptions;
 
 use function ctype_xdigit;
 use function hexdec;
@@ -28,20 +28,21 @@ use function trim;
 use const Shlinkio\Shlink\DEFAULT_QR_CODE_BG_COLOR;
 use const Shlinkio\Shlink\DEFAULT_QR_CODE_COLOR;
 
-final class QrCodeParams
+final readonly class QrCodeParams
 {
-    private const MIN_SIZE = 50;
-    private const MAX_SIZE = 1000;
-    private const SUPPORTED_FORMATS = ['png', 'svg'];
+    private const int MIN_SIZE = 50;
+    private const int MAX_SIZE = 1000;
+    private const array SUPPORTED_FORMATS = ['png', 'svg'];
 
     private function __construct(
-        public readonly int $size,
-        public readonly int $margin,
-        public readonly WriterInterface $writer,
-        public readonly ErrorCorrectionLevel $errorCorrectionLevel,
-        public readonly RoundBlockSizeMode $roundBlockSizeMode,
-        public readonly ColorInterface $color,
-        public readonly ColorInterface $bgColor,
+        public int $size,
+        public int $margin,
+        public WriterInterface $writer,
+        public ErrorCorrectionLevel $errorCorrectionLevel,
+        public RoundBlockSizeMode $roundBlockSizeMode,
+        public ColorInterface $color,
+        public ColorInterface $bgColor,
+        public bool $disableLogo,
     ) {
     }
 
@@ -57,6 +58,7 @@ final class QrCodeParams
             roundBlockSizeMode: self::resolveRoundBlockSize($query, $defaults),
             color: self::resolveColor($query, $defaults),
             bgColor: self::resolveBackgroundColor($query, $defaults),
+            disableLogo: isset($query['logo']) && $query['logo'] === 'disable',
         );
     }
 
@@ -123,7 +125,7 @@ final class QrCodeParams
         return self::parseHexColor($bgColor, DEFAULT_QR_CODE_BG_COLOR);
     }
 
-    private static function parseHexColor(string $hexColor, ?string $fallback): Color
+    private static function parseHexColor(string $hexColor, string|null $fallback): Color
     {
         $hexColor = ltrim($hexColor, '#');
         if (! ctype_xdigit($hexColor) && $fallback !== null) {

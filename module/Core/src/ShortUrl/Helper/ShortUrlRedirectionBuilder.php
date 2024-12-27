@@ -8,7 +8,7 @@ use GuzzleHttp\Psr7\Query;
 use GuzzleHttp\Psr7\Uri;
 use Laminas\Stdlib\ArrayUtils;
 use Psr\Http\Message\ServerRequestInterface;
-use Shlinkio\Shlink\Core\Options\TrackingOptions;
+use Shlinkio\Shlink\Core\Config\Options\TrackingOptions;
 use Shlinkio\Shlink\Core\RedirectRule\ShortUrlRedirectionResolverInterface;
 use Shlinkio\Shlink\Core\ShortUrl\Entity\ShortUrl;
 
@@ -25,7 +25,7 @@ readonly class ShortUrlRedirectionBuilder implements ShortUrlRedirectionBuilderI
     public function buildShortUrlRedirect(
         ShortUrl $shortUrl,
         ServerRequestInterface $request,
-        ?string $extraPath = null,
+        string|null $extraPath = null,
     ): string {
         $uri = new Uri($this->redirectionResolver->resolveLongUrl($shortUrl, $request));
         $shouldForwardQuery = $shortUrl->forwardQuery();
@@ -58,7 +58,7 @@ readonly class ShortUrlRedirectionBuilder implements ShortUrlRedirectionBuilderI
         return Query::build($mergedQuery);
     }
 
-    private function resolvePath(string $basePath, ?string $extraPath): string
+    private function resolvePath(string $basePath, string|null $extraPath): string
     {
         return $extraPath === null ? $basePath : sprintf('%s%s', $basePath, $extraPath);
     }

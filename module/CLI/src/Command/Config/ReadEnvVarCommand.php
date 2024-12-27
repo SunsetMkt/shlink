@@ -21,12 +21,12 @@ use function sprintf;
 
 class ReadEnvVarCommand extends Command
 {
-    public const NAME = 'env-var:read';
+    public const string NAME = 'env-var:read';
 
     /** @var Closure(string $envVar): mixed */
     private readonly Closure $loadEnvVar;
 
-    public function __construct(?Closure $loadEnvVar = null)
+    public function __construct(Closure|null $loadEnvVar = null)
     {
         $this->loadEnvVar = $loadEnvVar ?? static fn (string $envVar) => EnvVars::from($envVar)->loadFromEnv();
         parent::__construct();

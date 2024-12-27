@@ -1,4 +1,4 @@
-FROM php:8.3-alpine3.19 as base
+FROM php:8.4-alpine3.21 AS base
 
 ARG SHLINK_VERSION=latest
 ENV SHLINK_VERSION ${SHLINK_VERSION}
@@ -7,8 +7,8 @@ ENV SHLINK_RUNTIME ${SHLINK_RUNTIME}
 
 ENV USER_ID '1001'
 ENV PDO_SQLSRV_VERSION 5.12.0
-ENV MS_ODBC_DOWNLOAD 'b/9/f/b9f3cce4-3925-46d4-9f46-da08869c6486'
-ENV MS_ODBC_SQL_VERSION 18_18.1.1.1
+ENV MS_ODBC_DOWNLOAD '7/6/d/76de322a-d860-4894-9945-f0cc5d6a45f8'
+ENV MS_ODBC_SQL_VERSION 18_18.4.1.1
 ENV LC_ALL 'C'
 
 WORKDIR /etc/shlink
@@ -36,14 +36,14 @@ RUN apk add --no-cache --virtual .phpize-deps ${PHPIZE_DEPS} unixodbc-dev && \
     apk del .phpize-deps
 
 # Install shlink
-FROM base as builder
+FROM base AS builder
 COPY . .
 COPY --from=composer:2 /usr/bin/composer ./composer.phar
 RUN apk add --no-cache git && \
     php composer.phar install --no-dev --prefer-dist --optimize-autoloader --no-progress --no-interaction && \
     php composer.phar clear-cache && \
     rm -r docker composer.* && \
-    sed -i "s/%SHLINK_VERSION%/${SHLINK_VERSION}/g" config/autoload/app_options.global.php
+    sed -i "s/%SHLINK_VERSION%/${SHLINK_VERSION}/g" module/Core/src/Config/Options/AppOptions.php
 
 
 # Prepare final image
@@ -61,7 +61,6 @@ EXPOSE 8080
 
 # Copy config specific for the image
 COPY docker/docker-entrypoint.sh docker-entrypoint.sh
-COPY docker/config/shlink_in_docker.local.php config/autoload/shlink_in_docker.local.php
 COPY docker/config/php.ini ${PHP_INI_DIR}/conf.d/
 
 USER ${USER_ID}

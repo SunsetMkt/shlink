@@ -21,7 +21,7 @@ use function str_contains;
 
 class DomainRedirectsCommand extends Command
 {
-    public const NAME = 'domain:redirects';
+    public const string NAME = 'domain:redirects';
 
     public function __construct(private readonly DomainServiceInterface $domainService)
     {
@@ -74,7 +74,7 @@ class DomainRedirectsCommand extends Command
         $domainAuthority = $input->getArgument('domain');
         $domain = $this->domainService->findByAuthority($domainAuthority);
 
-        $ask = static function (string $message, ?string $current) use ($io): ?string {
+        $ask = static function (string $message, string|null $current) use ($io): string|null {
             if ($current === null) {
                 return $io->ask(sprintf('%s (Leave empty for no redirect)', $message));
             }

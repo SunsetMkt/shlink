@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Shlinkio\Shlink\Core\ShortUrl\Model\Validation;
 
 use Laminas\Validator\AbstractValidator;
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 
 use function is_string;
 use function strpbrk;
 
 class CustomSlugValidator extends AbstractValidator
 {
-    private const NOT_STRING = 'NOT_STRING';
-    private const CONTAINS_URL_CHARACTERS = 'CONTAINS_URL_CHARACTERS';
+    private const string NOT_STRING = 'NOT_STRING';
+    private const string CONTAINS_URL_CHARACTERS = 'CONTAINS_URL_CHARACTERS';
 
     protected array $messageTemplates = [
         self::NOT_STRING => 'Provided value is not a string.',
@@ -46,10 +46,10 @@ class CustomSlugValidator extends AbstractValidator
             return false;
         }
 
-        // URL reserved characters: https://datatracker.ietf.org/doc/html/rfc3986#section-2.2
-        $reservedChars = "!*'();:@&=+$,?%#[]";
+        // URL gen-delimiter reserved characters, except `/`: https://datatracker.ietf.org/doc/html/rfc3986#section-2.2
+        $reservedChars = ':?#[]@';
         if (! $this->options->multiSegmentSlugsEnabled) {
-            // Slashes should be allowed for multi-segment slugs
+            // Slashes should only be allowed if multi-segment slugs are enabled
             $reservedChars .= '/';
         }
 

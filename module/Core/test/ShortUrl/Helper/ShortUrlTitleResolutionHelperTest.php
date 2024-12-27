@@ -16,13 +16,13 @@ use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\MockObject\Builder\InvocationMocker;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\ShortUrl\Helper\ShortUrlTitleResolutionHelper;
 use Shlinkio\Shlink\Core\ShortUrl\Model\ShortUrlCreation;
 
 class ShortUrlTitleResolutionHelperTest extends TestCase
 {
-    private const LONG_URL = 'http://foobar.com/12345/hello?foo=bar';
+    private const string LONG_URL = 'http://foobar.com/12345/hello?foo=bar';
 
     private MockObject & ClientInterface $httpClient;
 
@@ -90,8 +90,8 @@ class ShortUrlTitleResolutionHelperTest extends TestCase
     }
 
     #[Test]
-    #[TestWith(['TEXT/html; charset=utf-8'], name: 'charset')]
-    #[TestWith(['TEXT/html'], name: 'no charset')]
+    #[TestWith(['TEXT/html; charset=utf-8'], 'charset')]
+    #[TestWith(['TEXT/html'], 'no charset')]
     public function titleIsUpdatedWhenItCanBeResolvedFromResponse(string $contentType): void
     {
         $data = ShortUrlCreation::fromRawData(['longUrl' => self::LONG_URL]);

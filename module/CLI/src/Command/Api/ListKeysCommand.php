@@ -21,11 +21,11 @@ use function sprintf;
 
 class ListKeysCommand extends Command
 {
-    private const ERROR_STRING_PATTERN = '<fg=red>%s</>';
-    private const SUCCESS_STRING_PATTERN = '<info>%s</info>';
-    private const WARNING_STRING_PATTERN = '<comment>%s</comment>';
+    private const string ERROR_STRING_PATTERN = '<fg=red>%s</>';
+    private const string SUCCESS_STRING_PATTERN = '<info>%s</info>';
+    private const string WARNING_STRING_PATTERN = '<comment>%s</comment>';
 
-    public const NAME = 'api-key:list';
+    public const string NAME = 'api-key:list';
 
     public function __construct(private readonly ApiKeyServiceInterface $apiKeyService)
     {
@@ -54,7 +54,7 @@ class ListKeysCommand extends Command
             $messagePattern = $this->determineMessagePattern($apiKey);
 
             // Set columns for this row
-            $rowData = [sprintf($messagePattern, $apiKey), sprintf($messagePattern, $apiKey->name ?? '-')];
+            $rowData = [sprintf($messagePattern, $apiKey->name ?? '-')];
             if (! $enabledOnly) {
                 $rowData[] = sprintf($messagePattern, $this->getEnabledSymbol($apiKey));
             }
@@ -67,7 +67,6 @@ class ListKeysCommand extends Command
         }, $this->apiKeyService->listKeys($enabledOnly));
 
         ShlinkTable::withRowSeparators($output)->render(array_filter([
-            'Key',
             'Name',
             ! $enabledOnly ? 'Is enabled' : null,
             'Expiration date',

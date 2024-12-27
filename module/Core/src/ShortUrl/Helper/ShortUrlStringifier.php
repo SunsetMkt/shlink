@@ -5,32 +5,34 @@ declare(strict_types=1);
 namespace Shlinkio\Shlink\Core\ShortUrl\Helper;
 
 use Laminas\Diactoros\Uri;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\ShortUrl\Entity\ShortUrl;
+use Shlinkio\Shlink\Core\ShortUrl\Model\ShortUrlIdentifier;
 
 use function sprintf;
 
-class ShortUrlStringifier implements ShortUrlStringifierInterface
+readonly class ShortUrlStringifier implements ShortUrlStringifierInterface
 {
-    /**
-     * @param array{schema?: string, hostname?: string} $domainConfig
-     */
-    public function __construct(private readonly array $domainConfig, private readonly string $basePath = '')
-    {
+    public function __construct(
+        private UrlShortenerOptions $urlShortenerOptions = new UrlShortenerOptions(),
+        private string $basePath = '',
+    ) {
     }
 
-    public function stringify(ShortUrl $shortUrl): string
+    public function stringify(ShortUrl|ShortUrlIdentifier $shortUrl): string
     {
-        $uriWithoutShortCode = (new Uri())->withScheme($this->domainConfig['schema'] ?? 'http')
-                                          ->withHost($this->resolveDomain($shortUrl))
+        $shortUrlIdentifier = $shortUrl instanceof ShortUrl ? ShortUrlIdentifier::fromShortUrl($shortUrl) : $shortUrl;
+        $uriWithoutShortCode = (new Uri())->withScheme($this->urlShortenerOptions->schema)
+                                          ->withHost($this->resolveDomain($shortUrlIdentifier))
                                           ->withPath($this->basePath)
                                           ->__toString();
 
         // The short code needs to be appended to avoid it from being URL-encoded
-        return sprintf('%s/%s', $uriWithoutShortCode, $shortUrl->getShortCode());
+        return sprintf('%s/%s', $uriWithoutShortCode, $shortUrlIdentifier->shortCode);
     }
 
-    private function resolveDomain(ShortUrl $shortUrl): string
+    private function resolveDomain(ShortUrlIdentifier $shortUrlIdentifier): string
     {
-        return $shortUrl->getDomain()?->authority ?? $this->domainConfig['hostname'] ?? '';
+        return $shortUrlIdentifier->domain ?? $this->urlShortenerOptions->defaultDomain;
     }
 }

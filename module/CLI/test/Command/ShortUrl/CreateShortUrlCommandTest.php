@@ -12,8 +12,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shlinkio\Shlink\CLI\Command\ShortUrl\CreateShortUrlCommand;
 use Shlinkio\Shlink\CLI\Util\ExitCode;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\Exception\NonUniqueSlugException;
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\ShortUrl\Entity\ShortUrl;
 use Shlinkio\Shlink\Core\ShortUrl\Helper\ShortUrlStringifierInterface;
 use Shlinkio\Shlink\Core\ShortUrl\Model\ShortUrlCreation;
@@ -37,10 +37,7 @@ class CreateShortUrlCommandTest extends TestCase
         $command = new CreateShortUrlCommand(
             $this->urlShortener,
             $this->stringifier,
-            new UrlShortenerOptions(
-                domain: ['hostname' => 'example.com', 'schema' => ''],
-                defaultShortCodesLength: 5,
-            ),
+            new UrlShortenerOptions(defaultDomain: 'example.com', defaultShortCodesLength: 5),
         );
         $this->commandTester = CliTestUtils::testerForCommand($command);
     }
@@ -107,7 +104,7 @@ class CreateShortUrlCommandTest extends TestCase
     }
 
     #[Test, DataProvider('provideDomains')]
-    public function properlyProcessesProvidedDomain(array $input, ?string $expectedDomain): void
+    public function properlyProcessesProvidedDomain(array $input, string|null $expectedDomain): void
     {
         $this->urlShortener->expects($this->once())->method('shorten')->with(
             $this->callback(function (ShortUrlCreation $meta) use ($expectedDomain) {
@@ -131,8 +128,10 @@ class CreateShortUrlCommandTest extends TestCase
     }
 
     #[Test, DataProvider('provideFlags')]
-    public function urlValidationHasExpectedValueBasedOnProvidedFlags(array $options, ?bool $expectedCrawlable): void
-    {
+    public function urlValidationHasExpectedValueBasedOnProvidedFlags(
+        array $options,
+        bool|null $expectedCrawlable,
+    ): void {
         $shortUrl = ShortUrl::createFake();
         $this->urlShortener->expects($this->once())->method('shorten')->with(
             $this->callback(function (ShortUrlCreation $meta) use ($expectedCrawlable) {

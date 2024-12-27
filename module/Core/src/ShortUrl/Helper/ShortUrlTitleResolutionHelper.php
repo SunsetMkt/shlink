@@ -8,7 +8,7 @@ use Fig\Http\Message\RequestMethodInterface;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Throwable;
 
 use function html_entity_decode;
@@ -21,14 +21,14 @@ use function trim;
 
 readonly class ShortUrlTitleResolutionHelper implements ShortUrlTitleResolutionHelperInterface
 {
-    public const MAX_REDIRECTS = 15;
-    public const CHROME_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+    public const int MAX_REDIRECTS = 15;
+    public const string CHROME_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
         . 'Chrome/121.0.0.0 Safari/537.36';
 
     // Matches the value inside a html title tag
-    private const TITLE_TAG_VALUE = '/<title[^>]*>(.*?)<\/title>/i';
+    private const string TITLE_TAG_VALUE = '/<title[^>]*>(.*?)<\/title>/i';
     // Matches the charset inside a Content-Type header
-    private const CHARSET_VALUE = '/charset=([^;]+)/i';
+    private const string CHARSET_VALUE = '/charset=([^;]+)/i';
 
     public function __construct(
         private ClientInterface $httpClient,
@@ -61,7 +61,7 @@ readonly class ShortUrlTitleResolutionHelper implements ShortUrlTitleResolutionH
         return $title !== null ? $data->withResolvedTitle($title) : $data;
     }
 
-    private function fetchUrl(string $url): ?ResponseInterface
+    private function fetchUrl(string $url): ResponseInterface|null
     {
         try {
             return $this->httpClient->request(RequestMethodInterface::METHOD_GET, $url, [
@@ -80,7 +80,7 @@ readonly class ShortUrlTitleResolutionHelper implements ShortUrlTitleResolutionH
         }
     }
 
-    private function tryToResolveTitle(ResponseInterface $response, string $contentType): ?string
+    private function tryToResolveTitle(ResponseInterface $response, string $contentType): string|null
     {
         $collectedBody = '';
         $body = $response->getBody();

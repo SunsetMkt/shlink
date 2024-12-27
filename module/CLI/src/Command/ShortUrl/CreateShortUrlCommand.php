@@ -6,8 +6,8 @@ namespace Shlinkio\Shlink\CLI\Command\ShortUrl;
 
 use Shlinkio\Shlink\CLI\Input\ShortUrlDataInput;
 use Shlinkio\Shlink\CLI\Util\ExitCode;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\Exception\NonUniqueSlugException;
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\ShortUrl\Helper\ShortUrlStringifierInterface;
 use Shlinkio\Shlink\Core\ShortUrl\UrlShortenerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -20,9 +20,9 @@ use function sprintf;
 
 class CreateShortUrlCommand extends Command
 {
-    public const NAME = 'short-url:create';
+    public const string NAME = 'short-url:create';
 
-    private ?SymfonyStyle $io;
+    private SymfonyStyle $io;
     private readonly ShortUrlDataInput $shortUrlDataInput;
 
     public function __construct(

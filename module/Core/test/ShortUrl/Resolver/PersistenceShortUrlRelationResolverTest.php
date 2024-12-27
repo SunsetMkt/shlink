@@ -10,9 +10,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\Domain\Entity\Domain;
 use Shlinkio\Shlink\Core\Domain\Repository\DomainRepository;
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\ShortUrl\Resolver\PersistenceShortUrlRelationResolver;
 use Shlinkio\Shlink\Core\Tag\Entity\Tag;
 use Shlinkio\Shlink\Core\Tag\Repository\TagRepository;
@@ -29,13 +29,11 @@ class PersistenceShortUrlRelationResolverTest extends TestCase
         $this->em = $this->createMock(EntityManagerInterface::class);
         $this->em->method('getEventManager')->willReturn(new EventManager());
 
-        $this->resolver = new PersistenceShortUrlRelationResolver($this->em, new UrlShortenerOptions(
-            domain: ['schema' => 'https', 'hostname' => 'default.com'],
-        ));
+        $this->resolver = new PersistenceShortUrlRelationResolver($this->em, new UrlShortenerOptions('default.com'));
     }
 
     #[Test, DataProvider('provideDomainsThatEmpty')]
-    public function returnsEmptyInSomeCases(?string $domain): void
+    public function returnsEmptyInSomeCases(string|null $domain): void
     {
         $this->em->expects($this->never())->method('getRepository')->with(Domain::class);
         self::assertNull($this->resolver->resolveDomain($domain));
@@ -48,7 +46,7 @@ class PersistenceShortUrlRelationResolverTest extends TestCase
     }
 
     #[Test, DataProvider('provideFoundDomains')]
-    public function findsOrCreatesDomainWhenValueIsProvided(?Domain $foundDomain, string $authority): void
+    public function findsOrCreatesDomainWhenValueIsProvided(Domain|null $foundDomain, string $authority): void
     {
         $repo = $this->createMock(DomainRepository::class);
         $repo->expects($this->once())->method('findOneBy')->with(['authority' => $authority])->willReturn($foundDomain);
@@ -80,8 +78,8 @@ class PersistenceShortUrlRelationResolverTest extends TestCase
 
         $tagRepo = $this->createMock(TagRepository::class);
         $tagRepo->expects($this->exactly($expectedLookedOutTags))->method('findOneBy')->with(
-            $this->isType('array'),
-        )->willReturnCallback(function (array $criteria): ?Tag {
+            $this->isArray(),
+        )->willReturnCallback(function (array $criteria): Tag|null {
             ['name' => $name] = $criteria;
             return $name === 'foo' ? new Tag($name) : null;
         });
@@ -117,7 +115,7 @@ class PersistenceShortUrlRelationResolverTest extends TestCase
     public function newDomainsAreMemoizedUntilStateIsCleared(): void
     {
         $repo = $this->createMock(DomainRepository::class);
-        $repo->expects($this->exactly(3))->method('findOneBy')->with($this->isType('array'))->willReturn(null);
+        $repo->expects($this->exactly(3))->method('findOneBy')->with($this->isArray())->willReturn(null);
         $this->em->method('getRepository')->with(Domain::class)->willReturn($repo);
 
         $authority = 'foo.com';
@@ -136,7 +134,7 @@ class PersistenceShortUrlRelationResolverTest extends TestCase
     public function newTagsAreMemoizedUntilStateIsCleared(): void
     {
         $tagRepo = $this->createMock(TagRepository::class);
-        $tagRepo->expects($this->exactly(6))->method('findOneBy')->with($this->isType('array'))->willReturn(null);
+        $tagRepo->expects($this->exactly(6))->method('findOneBy')->with($this->isArray())->willReturn(null);
         $this->em->method('getRepository')->with(Tag::class)->willReturn($tagRepo);
 
         $tags = ['foo', 'bar'];

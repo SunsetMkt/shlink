@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\Exception\ShortCodeCannotBeRegeneratedException;
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\ShortUrl\Entity\ShortUrl;
 use Shlinkio\Shlink\Core\ShortUrl\Model\ShortUrlCreation;
 use Shlinkio\Shlink\Core\ShortUrl\Model\ShortUrlMode;
@@ -75,7 +75,7 @@ class ShortUrlTest extends TestCase
     }
 
     #[Test, DataProvider('provideLengths')]
-    public function shortCodesHaveExpectedLength(?int $length, int $expectedLength): void
+    public function shortCodesHaveExpectedLength(int|null $length, int $expectedLength): void
     {
         $shortUrl = ShortUrl::create(ShortUrlCreation::fromRawData(
             [ShortUrlInputFilter::SHORT_CODE_LENGTH => $length, 'longUrl' => 'https://longUrl'],
@@ -94,7 +94,7 @@ class ShortUrlTest extends TestCase
     #[TestWith([null, '', 5])]
     #[TestWith(['foo bar/', 'foo-bar-', 13])]
     public function shortCodesHaveExpectedPrefix(
-        ?string $pathPrefix,
+        string|null $pathPrefix,
         string $expectedPrefix,
         int $expectedShortCodeLength,
     ): void {

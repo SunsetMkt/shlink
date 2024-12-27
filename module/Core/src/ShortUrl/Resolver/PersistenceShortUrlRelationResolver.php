@@ -8,11 +8,11 @@ use Doctrine\Common\Collections;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\Domain\Entity\Domain;
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\Tag\Entity\Tag;
-use Symfony\Component\Lock\Lock;
 use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\SharedLockInterface;
 use Symfony\Component\Lock\Store\InMemoryStore;
 
 use function array_map;
@@ -24,9 +24,9 @@ class PersistenceShortUrlRelationResolver implements ShortUrlRelationResolverInt
     private array $memoizedNewDomains = [];
     /** @var array<string, Tag> */
     private array $memoizedNewTags = [];
-    /** @var array<string, Lock> */
+    /** @var array<string, SharedLockInterface> */
     private array $tagLocks = [];
-    /** @var array<string, Lock> */
+    /** @var array<string, SharedLockInterface> */
     private array $domainLocks = [];
 
     public function __construct(
@@ -38,9 +38,9 @@ class PersistenceShortUrlRelationResolver implements ShortUrlRelationResolverInt
         $this->em->getEventManager()->addEventListener(Events::postFlush, $this);
     }
 
-    public function resolveDomain(?string $domain): ?Domain
+    public function resolveDomain(string|null $domain): Domain|null
     {
-        if ($domain === null || $domain === $this->options->defaultDomain()) {
+        if ($domain === null || $domain === $this->options->defaultDomain) {
             return null;
         }
 
@@ -100,19 +100,19 @@ class PersistenceShortUrlRelationResolver implements ShortUrlRelationResolverInt
     }
 
     /**
-     * @param array<string, Lock> $locks
+     * @param array<string, SharedLockInterface> $locks
      */
     private function lock(array &$locks, string $name): void
     {
         // Lock dependency creation for up to 5 seconds. This will prevent errors when trying to create the same one
         // more than once in parallel.
-        $locks[$name] = $lock = $this->locker->createLock($name, 5);
-        $lock->acquire(true);
+        $locks[$name] = $lock = $this->locker->createLock($name, ttl: 5);
+        $lock->acquire(blocking: true);
     }
 
     /**
     /**
-     * @param array<string, Lock> $locks
+     * @param array<string, SharedLockInterface> $locks
      */
     private function releaseLock(array &$locks, string $name): void
     {

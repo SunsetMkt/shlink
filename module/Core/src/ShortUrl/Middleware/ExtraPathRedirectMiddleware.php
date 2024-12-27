@@ -9,9 +9,10 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Shlinkio\Shlink\Core\Config\Options\ExtraPathMode;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\ErrorHandler\Model\NotFoundType;
 use Shlinkio\Shlink\Core\Exception\ShortUrlNotFoundException;
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\ShortUrl\Helper\ShortUrlRedirectionBuilderInterface;
 use Shlinkio\Shlink\Core\ShortUrl\Model\ShortUrlIdentifier;
 use Shlinkio\Shlink\Core\ShortUrl\ShortUrlResolverInterface;
@@ -25,14 +26,16 @@ use function implode;
 use function sprintf;
 use function trim;
 
-class ExtraPathRedirectMiddleware implements MiddlewareInterface
+use const Shlinkio\Shlink\REDIRECT_URL_REQUEST_ATTRIBUTE;
+
+readonly class ExtraPathRedirectMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private readonly ShortUrlResolverInterface $resolver,
-        private readonly RequestTrackerInterface $requestTracker,
-        private readonly ShortUrlRedirectionBuilderInterface $redirectionBuilder,
-        private readonly RedirectResponseHelperInterface $redirectResponseHelper,
-        private readonly UrlShortenerOptions $urlShortenerOptions,
+        private ShortUrlResolverInterface $resolver,
+        private RequestTrackerInterface $requestTracker,
+        private ShortUrlRedirectionBuilderInterface $redirectionBuilder,
+        private RedirectResponseHelperInterface $redirectResponseHelper,
+        private UrlShortenerOptions $urlShortenerOptions,
     ) {
     }
 
@@ -47,9 +50,9 @@ class ExtraPathRedirectMiddleware implements MiddlewareInterface
         return $this->tryToResolveRedirect($request, $handler);
     }
 
-    private function shouldApplyLogic(?NotFoundType $notFoundType): bool
+    private function shouldApplyLogic(NotFoundType|null $notFoundType): bool
     {
-        if ($notFoundType === null || ! $this->urlShortenerOptions->appendExtraPath) {
+        if ($notFoundType === null || $this->urlShortenerOptions->extraPathMode === ExtraPathMode::DEFAULT) {
             return false;
         }
 
@@ -73,9 +76,16 @@ class ExtraPathRedirectMiddleware implements MiddlewareInterface
 
         try {
             $shortUrl = $this->resolver->resolveEnabledShortUrl($identifier);
-            $this->requestTracker->trackIfApplicable($shortUrl, $request);
+            $longUrl = $this->redirectionBuilder->buildShortUrlRedirect(
+                $shortUrl,
+                $request,
+                $this->urlShortenerOptions->extraPathMode === ExtraPathMode::APPEND ? $extraPath : null,
+            );
+            $this->requestTracker->trackIfApplicable(
+                $shortUrl,
+                $request->withAttribute(REDIRECT_URL_REQUEST_ATTRIBUTE, $longUrl),
+            );
 
-            $longUrl = $this->redirectionBuilder->buildShortUrlRedirect($shortUrl, $request, $extraPath);
             return $this->redirectResponseHelper->buildRedirectResponse($longUrl);
         } catch (ShortUrlNotFoundException) {
             if ($extraPath === null || ! $this->urlShortenerOptions->multiSegmentSlugsEnabled) {

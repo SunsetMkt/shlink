@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shlinkio\Shlink\Core\Config\NotFoundRedirectConfigInterface;
+use Shlinkio\Shlink\Core\Config\Options\NotFoundRedirectOptions;
 use Shlinkio\Shlink\Core\Exception\ValidationException;
-use Shlinkio\Shlink\Core\Options\NotFoundRedirectOptions;
 use Shlinkio\Shlink\Rest\Action\Domain\Request\DomainRedirectsRequest;
 
 class DomainRedirectsRequestTest extends TestCase
@@ -30,11 +30,11 @@ class DomainRedirectsRequestTest extends TestCase
     #[Test, DataProvider('provideValidData')]
     public function isProperlyCastToNotFoundRedirects(
         array $data,
-        ?NotFoundRedirectConfigInterface $defaults,
+        NotFoundRedirectConfigInterface|null $defaults,
         string $expectedAuthority,
-        ?string $expectedBaseUrlRedirect,
-        ?string $expectedRegular404Redirect,
-        ?string $expectedInvalidShortUrlRedirect,
+        string|null $expectedBaseUrlRedirect,
+        string|null $expectedRegular404Redirect,
+        string|null $expectedInvalidShortUrlRedirect,
     ): void {
         $request = DomainRedirectsRequest::fromRawData($data);
         $notFound = $request->toNotFoundRedirects($defaults);

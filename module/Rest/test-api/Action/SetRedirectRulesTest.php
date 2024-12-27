@@ -13,12 +13,12 @@ use function sprintf;
 
 class SetRedirectRulesTest extends ApiTestCase
 {
-    private const LANGUAGE_EN_CONDITION = [
+    private const array LANGUAGE_EN_CONDITION = [
         'type' => 'language',
         'matchKey' => null,
         'matchValue' => 'en',
     ];
-    private const QUERY_FOO_BAR_CONDITION = [
+    private const array QUERY_FOO_BAR_CONDITION = [
         'type' => 'query-param',
         'matchKey' => 'foo',
         'matchValue' => 'bar',
@@ -96,6 +96,20 @@ class SetRedirectRulesTest extends ApiTestCase
             ],
         ],
     ]], 'invalid IP address')]
+    #[TestWith([[
+        'redirectRules' => [
+            [
+                'longUrl' => 'https://example.com',
+                'conditions' => [
+                    [
+                        'type' => 'geolocation-country-code',
+                        'matchKey' => null,
+                        'matchValue' => 'not a country code',
+                    ],
+                ],
+            ],
+        ],
+    ]], 'invalid country code')]
     public function errorIsReturnedWhenInvalidDataIsProvided(array $bodyPayload): void
     {
         $response = $this->callApiWithKey(self::METHOD_POST, '/short-urls/abc123/redirect-rules', [

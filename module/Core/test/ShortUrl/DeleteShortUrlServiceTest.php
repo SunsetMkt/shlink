@@ -9,8 +9,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Shlinkio\Shlink\Core\Config\Options\DeleteShortUrlsOptions;
 use Shlinkio\Shlink\Core\Exception\DeleteShortUrlException;
-use Shlinkio\Shlink\Core\Options\DeleteShortUrlsOptions;
 use Shlinkio\Shlink\Core\ShortUrl\DeleteShortUrlService;
 use Shlinkio\Shlink\Core\ShortUrl\Entity\ShortUrl;
 use Shlinkio\Shlink\Core\ShortUrl\Model\ExpiredShortUrlsConditions;
@@ -34,7 +34,7 @@ class DeleteShortUrlServiceTest extends TestCase
     protected function setUp(): void
     {
         $shortUrl = ShortUrl::createFake()->setVisits(new ArrayCollection(
-            array_map(fn () => Visit::forValidShortUrl(ShortUrl::createFake(), Visitor::emptyInstance()), range(0, 10)),
+            array_map(fn () => Visit::forValidShortUrl(ShortUrl::createFake(), Visitor::empty()), range(0, 10)),
         ));
         $this->shortCode = $shortUrl->getShortCode();
 

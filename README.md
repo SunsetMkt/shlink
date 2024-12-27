@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/github/license/shlinkio/shlink.svg?style=flat-square)](https://github.com/shlinkio/shlink/blob/main/LICENSE)
 
 [![Mastodon](https://img.shields.io/mastodon/follow/109329425426175098?color=%236364ff&domain=https%3A%2F%2Ffosstodon.org&label=follow&logo=mastodon&logoColor=white&style=flat-square)](https://fosstodon.org/@shlinkio)
-[![Bluesky](https://img.shields.io/badge/follow-shlinkio-0285FF.svg?style=flat-square&logo=bluesky&logoColor=white)](https://bsky.app/profile/shlinkio.bsky.social)
+[![Bluesky](https://img.shields.io/badge/follow-shlinkio-0285FF.svg?style=flat-square&logo=bluesky&logoColor=white)](https://bsky.app/profile/shlink.io)
 [![Paypal donate](https://img.shields.io/badge/Donate-paypal-blue.svg?style=flat-square&logo=paypal&colorA=aaaaaa)](https://slnk.to/donate)
 
 A PHP-based self-hosted URL shortener that can be used to serve shortened URLs under your own domain.
@@ -36,7 +36,7 @@ The idea is that you can just generate a container using the image and provide t
 
 First, make sure the host where you are going to run shlink fulfills these requirements:
 
-* PHP 8.2 or 8.3
+* PHP 8.3 or 8.4
 * The next PHP extensions: json, curl, pdo, intl, gd and gmp/bcmath.
     * apcu extension is recommended if you don't plan to use RoadRunner.
     * xml extension is required if you want to generate QR codes in svg format.

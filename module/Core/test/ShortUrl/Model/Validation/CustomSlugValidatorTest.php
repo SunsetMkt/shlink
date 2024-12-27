@@ -7,7 +7,7 @@ namespace ShlinkioTest\Shlink\Core\ShortUrl\Model\Validation;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\ShortUrl\Model\Validation\CustomSlugValidator;
 use stdClass;
 
@@ -59,13 +59,11 @@ class CustomSlugValidatorTest extends TestCase
 
     public static function provideInvalidValues(): iterable
     {
+        yield ['port:8080'];
         yield ['foo?bar=baz'];
         yield ['some-thing#foo'];
-        yield ['call()'];
-        yield ['array[]'];
+        yield ['brackets[]'];
         yield ['email@example.com'];
-        yield ['wildcard*'];
-        yield ['$500'];
     }
 
     public function createValidator(bool $multiSegmentSlugsEnabled = false): CustomSlugValidator

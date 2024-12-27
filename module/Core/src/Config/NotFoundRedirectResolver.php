@@ -17,8 +17,8 @@ use function urlencode;
 
 class NotFoundRedirectResolver implements NotFoundRedirectResolverInterface
 {
-    private const DOMAIN_PLACEHOLDER = '{DOMAIN}';
-    private const ORIGINAL_PATH_PLACEHOLDER = '{ORIGINAL_PATH}';
+    private const string DOMAIN_PLACEHOLDER = '{DOMAIN}';
+    private const string ORIGINAL_PATH_PLACEHOLDER = '{ORIGINAL_PATH}';
 
     public function __construct(
         private readonly RedirectResponseHelperInterface $redirectResponseHelper,
@@ -30,7 +30,7 @@ class NotFoundRedirectResolver implements NotFoundRedirectResolverInterface
         NotFoundType $notFoundType,
         NotFoundRedirectConfigInterface $config,
         UriInterface $currentUri,
-    ): ?ResponseInterface {
+    ): ResponseInterface|null {
         $urlToRedirectTo = match (true) {
             $notFoundType->isBaseUrl() && $config->hasBaseUrlRedirect() => $config->baseUrlRedirect(),
             $notFoundType->isRegularNotFound() && $config->hasRegular404Redirect() => $config->regular404Redirect(),

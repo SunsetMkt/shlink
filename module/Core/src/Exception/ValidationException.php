@@ -21,20 +21,20 @@ class ValidationException extends InvalidArgumentException implements ProblemDet
 {
     use CommonProblemDetailsExceptionTrait;
 
-    private const TITLE = 'Invalid data';
-    public const ERROR_CODE = 'invalid-data';
+    private const string TITLE = 'Invalid data';
+    public const string ERROR_CODE = 'invalid-data';
 
     private array $invalidElements;
 
     /**
      * @param InputFilterInterface<mixed> $inputFilter
      */
-    public static function fromInputFilter(InputFilterInterface $inputFilter, ?Throwable $prev = null): self
+    public static function fromInputFilter(InputFilterInterface $inputFilter, Throwable|null $prev = null): self
     {
         return static::fromArray($inputFilter->getMessages(), $prev);
     }
 
-    public static function fromArray(array $invalidData, ?Throwable $prev = null): self
+    public static function fromArray(array $invalidData, Throwable|null $prev = null): self
     {
         $status = StatusCodeInterface::STATUS_BAD_REQUEST;
         $e = new self('Provided data is not valid', $status, $prev);

@@ -13,7 +13,7 @@ use Shlinkio\Shlink\TestUtils\ApiTest\ApiTestCase;
 
 class OrphanVisitsTest extends ApiTestCase
 {
-    private const INVALID_SHORT_URL = [
+    private const array INVALID_SHORT_URL = [
         'referer' => 'https://s.test/foo',
         'date' => '2020-03-01T00:00:00+00:00',
         'userAgent' => 'cf-facebook',
@@ -21,8 +21,9 @@ class OrphanVisitsTest extends ApiTestCase
         'potentialBot' => true,
         'visitedUrl' => 'foo.com',
         'type' => 'invalid_short_url',
+        'redirectUrl' => null,
     ];
-    private const REGULAR_NOT_FOUND = [
+    private const array REGULAR_NOT_FOUND = [
         'referer' => 'https://s.test/foo/bar',
         'date' => '2020-02-01T00:00:00+00:00',
         'userAgent' => 'shlink-tests-agent',
@@ -30,8 +31,9 @@ class OrphanVisitsTest extends ApiTestCase
         'potentialBot' => false,
         'visitedUrl' => '',
         'type' => 'regular_404',
+        'redirectUrl' => null,
     ];
-    private const BASE_URL = [
+    private const array BASE_URL = [
         'referer' => 'https://s.test',
         'date' => '2020-01-01T00:00:00+00:00',
         'userAgent' => 'shlink-tests-agent',
@@ -39,6 +41,7 @@ class OrphanVisitsTest extends ApiTestCase
         'potentialBot' => false,
         'visitedUrl' => '',
         'type' => 'base_url',
+        'redirectUrl' => null,
     ];
 
     #[Test, DataProvider('provideQueries')]

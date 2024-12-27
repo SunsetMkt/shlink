@@ -9,6 +9,7 @@ use Laminas\Diactoros\ServerRequest;
 use Laminas\Diactoros\ServerRequestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
@@ -16,8 +17,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\NullLogger;
 use Shlinkio\Shlink\Common\Response\QrCodeResponse;
 use Shlinkio\Shlink\Core\Action\QrCodeAction;
+use Shlinkio\Shlink\Core\Config\Options\QrCodeOptions;
 use Shlinkio\Shlink\Core\Exception\ShortUrlNotFoundException;
-use Shlinkio\Shlink\Core\Options\QrCodeOptions;
 use Shlinkio\Shlink\Core\ShortUrl\Entity\ShortUrl;
 use Shlinkio\Shlink\Core\ShortUrl\Helper\ShortUrlStringifier;
 use Shlinkio\Shlink\Core\ShortUrl\Model\ShortUrlIdentifier;
@@ -32,8 +33,8 @@ use const Shlinkio\Shlink\DEFAULT_QR_CODE_COLOR;
 
 class QrCodeActionTest extends TestCase
 {
-    private const WHITE = 0xFFFFFF;
-    private const BLACK = 0x0;
+    private const int WHITE = 0xFFFFFF;
+    private const int BLACK = 0x0;
 
     private MockObject & ShortUrlResolverInterface $urlResolver;
 
@@ -190,7 +191,7 @@ class QrCodeActionTest extends TestCase
     #[Test, DataProvider('provideRoundBlockSize')]
     public function imageCanRemoveExtraMarginWhenBlockRoundIsDisabled(
         QrCodeOptions $defaultOptions,
-        ?string $roundBlockSize,
+        string|null $roundBlockSize,
         int $expectedColor,
     ): void {
         $code = 'abc123';
@@ -234,7 +235,7 @@ class QrCodeActionTest extends TestCase
     }
 
     #[Test, DataProvider('provideColors')]
-    public function properColorsAreUsed(?string $queryColor, ?string $optionsColor, int $expectedColor): void
+    public function properColorsAreUsed(string|null $queryColor, string|null $optionsColor, int $expectedColor): void
     {
         $code = 'abc123';
         $req = ServerRequestFactory::fromGlobals()
@@ -294,11 +295,16 @@ class QrCodeActionTest extends TestCase
     }
 
     #[Test]
-    public function logoIsAddedToQrCodeIfOptionIsDefined(): void
+    #[TestWith([[], '4696E5'])] // The logo has Shlink's brand color
+    #[TestWith([['logo' => 'invalid'], '4696E5'])] // Invalid `logo` values are ignored. Default logo is still rendered
+    #[TestWith([['logo' => 'disable'], '000000'])] // No logo will be added if explicitly disabled
+    public function logoIsAddedToQrCodeIfOptionIsDefined(array $query, string $expectedColor): void
     {
-        $logoUrl = 'https://avatars.githubusercontent.com/u/20341790?v=4'; // Shlink logo
+        $logoUrl = 'https://avatars.githubusercontent.com/u/20341790?v=4'; // Shlink's logo
         $code = 'abc123';
-        $req = ServerRequestFactory::fromGlobals()->withAttribute('shortCode', $code);
+        $req = ServerRequestFactory::fromGlobals()
+            ->withAttribute('shortCode', $code)
+            ->withQueryParams($query);
 
         $this->urlResolver->method('resolveEnabledShortUrl')->with(
             ShortUrlIdentifier::fromShortCodeAndDomain($code),
@@ -309,9 +315,9 @@ class QrCodeActionTest extends TestCase
         $image = imagecreatefromstring($resp->getBody()->__toString());
         self::assertNotFalse($image);
 
-        // At around 100x100 px we can already find the logo, which has Shlink's brand color
+        // At around 100x100 px we can already find the logo, if present
         $resultingColor = imagecolorat($image, 100, 100);
-        self::assertEquals(hexdec('4696E5'), $resultingColor);
+        self::assertEquals(hexdec($expectedColor), $resultingColor);
     }
 
     public static function provideEnabled(): iterable
@@ -320,11 +326,11 @@ class QrCodeActionTest extends TestCase
         yield 'only enabled short URLs' => [false];
     }
 
-    public function action(?QrCodeOptions $options = null): QrCodeAction
+    public function action(QrCodeOptions|null $options = null): QrCodeAction
     {
         return new QrCodeAction(
             $this->urlResolver,
-            new ShortUrlStringifier(['domain' => 's.test']),
+            new ShortUrlStringifier(),
             new NullLogger(),
             $options ?? new QrCodeOptions(enabledForDisabledShortUrls: false),
         );

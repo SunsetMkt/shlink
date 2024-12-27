@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
-use Shlinkio\Shlink\Core\Options\TrackingOptions;
+use Shlinkio\Shlink\Core\Config\Options\TrackingOptions;
 use Shlinkio\Shlink\Core\RedirectRule\ShortUrlRedirectionResolverInterface;
 use Shlinkio\Shlink\Core\ShortUrl\Entity\ShortUrl;
 use Shlinkio\Shlink\Core\ShortUrl\Helper\ShortUrlRedirectionBuilder;
@@ -35,8 +35,8 @@ class ShortUrlRedirectionBuilderTest extends TestCase
     public function buildShortUrlRedirectBuildsExpectedUrl(
         string $expectedUrl,
         ServerRequestInterface $request,
-        ?string $extraPath,
-        ?bool $forwardQuery,
+        string|null $extraPath,
+        bool|null $forwardQuery,
     ): void {
         $shortUrl = ShortUrl::create(ShortUrlCreation::fromRawData([
             'longUrl' => 'https://example.com/foo/bar?some=thing',

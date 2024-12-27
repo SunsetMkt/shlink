@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shlinkio\Shlink\CLI\Input;
 
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\ShortUrl\Model\ShortUrlCreation;
 use Shlinkio\Shlink\Core\ShortUrl\Model\ShortUrlEdition;
 use Shlinkio\Shlink\Core\ShortUrl\Model\Validation\ShortUrlInputFilter;
@@ -18,7 +18,7 @@ use function array_unique;
 use function Shlinkio\Shlink\Core\ArrayUtils\flatten;
 use function Shlinkio\Shlink\Core\splitByComma;
 
-readonly final class ShortUrlDataInput
+final readonly class ShortUrlDataInput
 {
     public function __construct(Command $command, private bool $longUrlAsOption = false)
     {

@@ -9,14 +9,16 @@ use Laminas\ServiceManager\Factory\InvokableFactory;
 use Mezzio\ProblemDetails\ProblemDetailsResponseFactory;
 use Mezzio\Router\Middleware\ImplicitOptionsMiddleware;
 use Psr\Log\LoggerInterface;
+use Shlinkio\Shlink\Common\Doctrine\EntityRepositoryFactory;
 use Shlinkio\Shlink\Common\Mercure\LcobucciJwtProvider;
+use Shlinkio\Shlink\Core\Config;
 use Shlinkio\Shlink\Core\Domain\DomainService;
-use Shlinkio\Shlink\Core\Options;
 use Shlinkio\Shlink\Core\RedirectRule;
 use Shlinkio\Shlink\Core\ShortUrl;
 use Shlinkio\Shlink\Core\ShortUrl\Transformer\ShortUrlDataTransformer;
 use Shlinkio\Shlink\Core\Tag\TagService;
 use Shlinkio\Shlink\Core\Visit;
+use Shlinkio\Shlink\Rest\ApiKey\Repository\ApiKeyRepository;
 use Shlinkio\Shlink\Rest\Service\ApiKeyService;
 
 return [
@@ -24,6 +26,7 @@ return [
     'dependencies' => [
         'factories' => [
             ApiKeyService::class => ConfigAbstractFactory::class,
+            ApiKeyRepository::class => [EntityRepositoryFactory::class, Entity\ApiKey::class],
 
             Action\HealthAction::class => ConfigAbstractFactory::class,
             Action\MercureInfoAction::class => ConfigAbstractFactory::class,
@@ -62,19 +65,19 @@ return [
     ],
 
     ConfigAbstractFactory::class => [
-        ApiKeyService::class => ['em'],
+        ApiKeyService::class => ['em', ApiKeyRepository::class],
 
-        Action\HealthAction::class => ['em', Options\AppOptions::class],
+        Action\HealthAction::class => ['em', Config\Options\AppOptions::class],
         Action\MercureInfoAction::class => [LcobucciJwtProvider::class, 'config.mercure'],
         Action\ShortUrl\CreateShortUrlAction::class => [
             ShortUrl\UrlShortener::class,
             ShortUrlDataTransformer::class,
-            Options\UrlShortenerOptions::class,
+            Config\Options\UrlShortenerOptions::class,
         ],
         Action\ShortUrl\SingleStepCreateShortUrlAction::class => [
             ShortUrl\UrlShortener::class,
             ShortUrlDataTransformer::class,
-            Options\UrlShortenerOptions::class,
+            Config\Options\UrlShortenerOptions::class,
         ],
         Action\ShortUrl\EditShortUrlAction::class => [ShortUrl\ShortUrlService::class, ShortUrlDataTransformer::class],
         Action\ShortUrl\DeleteShortUrlAction::class => [ShortUrl\DeleteShortUrlService::class],
@@ -86,7 +89,7 @@ return [
         Action\Visit\TagVisitsAction::class => [Visit\VisitsStatsHelper::class],
         Action\Visit\DomainVisitsAction::class => [
             Visit\VisitsStatsHelper::class,
-            'config.url_shortener.domain.hostname',
+            Config\Options\UrlShortenerOptions::class,
         ],
         Action\Visit\GlobalVisitsAction::class => [Visit\VisitsStatsHelper::class],
         Action\Visit\OrphanVisitsAction::class => [Visit\VisitsStatsHelper::class],
@@ -101,7 +104,7 @@ return [
         Action\Tag\TagsStatsAction::class => [TagService::class],
         Action\Tag\DeleteTagsAction::class => [TagService::class],
         Action\Tag\UpdateTagAction::class => [TagService::class],
-        Action\Domain\ListDomainsAction::class => [DomainService::class, Options\NotFoundRedirectOptions::class],
+        Action\Domain\ListDomainsAction::class => [DomainService::class, Config\Options\NotFoundRedirectOptions::class],
         Action\Domain\DomainRedirectsAction::class => [DomainService::class],
         Action\RedirectRule\ListRedirectRulesAction::class => [
             ShortUrl\ShortUrlResolver::class,
@@ -113,10 +116,10 @@ return [
         ],
 
         Middleware\CrossDomainMiddleware::class => ['config.cors'],
-        Middleware\ShortUrl\DropDefaultDomainFromRequestMiddleware::class => ['config.url_shortener.domain.hostname'],
-        Middleware\ShortUrl\DefaultShortCodesLengthMiddleware::class => [
-            'config.url_shortener.default_short_codes_length',
+        Middleware\ShortUrl\DropDefaultDomainFromRequestMiddleware::class => [
+            Config\Options\UrlShortenerOptions::class,
         ],
+        Middleware\ShortUrl\DefaultShortCodesLengthMiddleware::class => [Config\Options\UrlShortenerOptions::class],
         Middleware\ShortUrl\OverrideDomainMiddleware::class => [DomainService::class],
         Middleware\Mercure\NotConfiguredMercureErrorHandler::class => [
             ProblemDetailsResponseFactory::class,

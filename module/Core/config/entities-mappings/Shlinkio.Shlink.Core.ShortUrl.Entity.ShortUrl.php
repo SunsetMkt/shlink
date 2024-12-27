@@ -28,10 +28,14 @@ return static function (ClassMetadata $metadata, array $emConfig): void {
             ->length(2048)
             ->build();
 
-    fieldWithUtf8Charset($builder->createField('shortCode', Types::STRING), $emConfig, 'bin')
+    $shortCodeField = fieldWithUtf8Charset($builder->createField('shortCode', Types::STRING), $emConfig, 'bin')
             ->columnName('short_code')
-            ->length(255)
-            ->build();
+            ->length(255);
+    if (($emConfig['connection']['driver'] ?? null) === 'pdo_sqlsrv') {
+        // Make sure a case-sensitive charset is set in short code for Microsoft SQL Server
+        $shortCodeField->option('collation', 'Latin1_General_CS_AS');
+    }
+    $shortCodeField->build();
 
     $builder->createField('dateCreated', ChronosDateTimeType::CHRONOS_DATETIME)
             ->columnName('date_created')
@@ -109,5 +113,10 @@ return static function (ClassMetadata $metadata, array $emConfig): void {
     $builder->createField('forwardQuery', Types::BOOLEAN)
             ->columnName('forward_query')
             ->option('default', true)
+            ->build();
+
+    $builder->createOneToMany('redirectRules', RedirectRule\Entity\ShortUrlRedirectRule::class)
+            ->mappedBy('shortUrl')
+            ->fetchExtraLazy()
             ->build();
 };

@@ -8,8 +8,8 @@ use Cake\Chronos\Chronos;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Shlinkio\Shlink\Core\Config\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\Exception\ValidationException;
-use Shlinkio\Shlink\Core\Options\UrlShortenerOptions;
 use Shlinkio\Shlink\Core\ShortUrl\Model\ShortUrlCreation;
 use Shlinkio\Shlink\Core\ShortUrl\Model\ShortUrlMode;
 use Shlinkio\Shlink\Core\ShortUrl\Model\Validation\ShortUrlInputFilter;
@@ -147,7 +147,7 @@ class ShortUrlCreationTest extends TestCase
     }
 
     #[Test, DataProvider('provideTitles')]
-    public function titleIsCroppedIfTooLong(?string $title, ?string $expectedTitle): void
+    public function titleIsCroppedIfTooLong(string|null $title, string|null $expectedTitle): void
     {
         $creation = ShortUrlCreation::fromRawData([
             'title' => $title,
@@ -170,7 +170,7 @@ class ShortUrlCreationTest extends TestCase
     }
 
     #[Test, DataProvider('provideDomains')]
-    public function emptyDomainIsDiscarded(?string $domain, ?string $expectedDomain): void
+    public function emptyDomainIsDiscarded(string|null $domain, string|null $expectedDomain): void
     {
         $creation = ShortUrlCreation::fromRawData([
             'domain' => $domain,
